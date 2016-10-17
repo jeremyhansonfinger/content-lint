@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'uri'
+
 module ERBLint
   class Linter
     # Checks for content style guide violations in the text nodes of HTML files.
@@ -32,7 +34,8 @@ module ERBLint
         text_nodes = Parser.get_text_nodes(file_tree)
         text_nodes.each do |text_node|
           node_has_content = text_node.text =~ /[^\n\s]/
-          next unless node_has_content
+          node_is_cdata = text_node.cdata?
+          next unless node_has_content && !node_is_cdata
           content_lines = split_lines(text_node)
           content_lines.each do |line|
             errors.concat(generate_errors(line[:text], line[:number]))
@@ -50,13 +53,20 @@ module ERBLint
           s = StringScanner.new(text_node.text)
           if s.check_until(/\n/)
             while (line_content = s.scan_until(/\n/))
-              lines.push(text: line_content, number: current_line_number)
+              uri_free_line_content = Parser.strip_uris(line_content)
+              final_line_content = Parser.strip_emails(uri_free_line_content)
+              lines.push(text: final_line_content, number: current_line_number)
               current_line_number += 1
             end
           else
-            lines.push(text: text_node.text, number: current_line_number)
+              line_content = text_node.text
+              uri_free_line_content = Parser.strip_uris(line_content)
+              final_line_content = Parser.strip_emails(uri_free_line_content)
+              lines.push(text: final_line_content, number: current_line_number)
           end
         end
+        require 'pry'
+        binding.pry
         lines
       end
 

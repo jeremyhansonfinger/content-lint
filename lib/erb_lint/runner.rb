@@ -55,7 +55,7 @@ module ERBLint
     def default_config
       {
         'linters' => {
-          'FinalNewline' => {
+          'ContentStyle' => {
             'enabled' => true
           }
         }

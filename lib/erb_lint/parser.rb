@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require 'nokogiri'
 require 'htmlentities'
+require 'uri'
 
 module ERBLint
   # Contains the logic for generating the file tree structure used by linters.
@@ -9,7 +10,6 @@ module ERBLint
 
     class << self
       def parse(file_content)
-
         final_file_content = add_end_marker(file_content)
 
         file_tree = Nokogiri::HTML.fragment(final_file_content)
@@ -54,8 +54,8 @@ module ERBLint
       end
 
       def strip_emails(text)
-      emails = /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\z/.match(text).to_a
-      email_length = []
+        emails = /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\z/.match(text).to_a
+        email_length = []
         if emails
           emails.each do |e|
             email_length.push(e.to_s.length)

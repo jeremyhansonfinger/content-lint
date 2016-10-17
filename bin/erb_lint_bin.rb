@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'local_content_style'
+require 'erb_lint'
 require 'YAML'
 # require 'pry'
 
@@ -9,11 +9,17 @@ command = ARGV[0]
 file_path = File.expand_path(command)
 file = File.read(file_path)
 linter_config = YAML.load(File.read('config/config.yml'))
-linter = LocalContentStyle::Linter.new(linter_config)
-errors = linter.lint_file(file)
+config = linter_config.dig('linters', 'ContentStyle')
+linter = ERBLint::Linter::ContentStyle.new(config)
+
+errors = linter.lint_file(ERBLint::Parser.parse(file))
+
+if errors
+  puts config.fetch('addendum', '')
+end
+
 errors.each do |e|
   m = e[:message]
   l = e[:line]
-  c = e[:column]
-  puts file_path.to_s + ":#{l}:#{c}: C: #{m}"
+  puts file_path.to_s + ":#{l}: #{m}"
 end

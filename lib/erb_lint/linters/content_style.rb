@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'uri'
+require 'nokogiri'
 
 module ERBLint
   class Linter
@@ -59,14 +59,12 @@ module ERBLint
               current_line_number += 1
             end
           else
-              line_content = text_node.text
-              uri_free_line_content = Parser.strip_uris(line_content)
-              final_line_content = Parser.strip_emails(uri_free_line_content)
-              lines.push(text: final_line_content, number: current_line_number)
+            line_content = text_node.text
+            uri_free_line_content = Parser.strip_uris(line_content)
+            final_line_content = Parser.strip_emails(uri_free_line_content)
+            lines.push(text: final_line_content, number: current_line_number)
           end
         end
-        require 'pry'
-        binding.pry
         lines
       end
 
@@ -77,19 +75,27 @@ module ERBLint
           violation = pattern_description.empty? ? violated_rule[:violating_pattern] : pattern_description
           {
             line: line_number,
-            message: "Don't use `#{violation}`. Do use `#{suggestion}`. #{@addendum}".strip
+            message: "Don't use `#{violation}`. Do use `#{suggestion}`.".strip # #{@addendum}".strip
           }
         end
       end
+
+      #TODO: If the line of the error has URIs or email addresses, scan the original line again and match to get the position? OR just do that anyway.
+      #TODO: Should I just find characters here by reversing the order of the scanning? No because there's stuff in the middle of the line that's parsed out. 
+      #So I guess I have to just find that exact violation on that line and then it'll give you the right characters.
+      #TODO: Put the logic back in to check that the violated pattern isn't part of the suggestion
 
       def violated_rules(text)
         @content_ruleset.select do |content_rule|
           violating_pattern = content_rule[:violating_pattern]
           suggestion = content_rule[:suggestion]
+          xs = 'x' * suggestion.length
+          clean_text = text.gsub(/#{suggestion}/, xs)
+          # Need to write a better test for this
           case_insensitive = content_rule[:case_insensitive] == true
-          match_case_insensitive = /(#{violating_pattern})\b/i.match(text)
-          match_case_sensitive = /(#{violating_pattern})\b/.match(text)
-          match_ignoring_initial_cap_violations = /[^\.]\s(#{violating_pattern})\b/.match(text)
+          match_case_insensitive = /\b(#{violating_pattern})\b/i.match(clean_text)
+          match_case_sensitive = /\b(#{violating_pattern})\b/.match(clean_text)
+          match_ignoring_initial_cap_violations = /[^\.]\s(#{violating_pattern})\b/.match(clean_text)
           if case_insensitive
             match_case_insensitive
           elsif !case_insensitive && suggestion_lowercase_violation_uppercase(suggestion, violating_pattern)

@@ -16,4 +16,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'htmlentities'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rubocop'
+  s.add_development_dependency 'pry'
+  s.add_development_dependency 'pry-nav'
 end

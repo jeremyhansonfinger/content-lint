@@ -2,7 +2,7 @@
 require 'nokogiri'
 require 'htmlentities'
 require 'uri'
-require 'pry'
+# require 'pry'
 
 module ERBLint
   # Contains the logic for generating the file tree structure used by linters.
@@ -14,8 +14,7 @@ module ERBLint
         final_file_content = add_end_marker(file_content)
 
         file_tree = Nokogiri::HTML.fragment(final_file_content)
-        # ensure_valid_tree(file_tree)
-
+        
         file_tree
       end
 
@@ -67,12 +66,6 @@ module ERBLint
           end
           text
         end
-      end
-
-      private
-
-      def ensure_valid_tree(_file_tree)
-        true
       end
     end
 

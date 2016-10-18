@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'content_style'
 
-describe ERBLint::Linter::ContentStyle do
+describe ContentStyle::Linter do
   let(:linter_config) do
     {
       'rule_set' => rule_set,
@@ -12,7 +12,7 @@ describe ERBLint::Linter::ContentStyle do
 
   let(:linter) { described_class.new(linter_config) }
 
-  subject(:linter_errors) { linter.lint_file(ERBLint::Parser.parse(file)) }
+  subject(:linter_errors) { linter.lint_file(ContentStyle::Parser.parse(file)) }
 
   context 'when rule set is empty' do
     let(:rule_set) { [] }
@@ -71,8 +71,11 @@ describe ERBLint::Linter::ContentStyle do
         ]
       end
 
+
+#something is wrong with this test
+
       let(:file) { <<~FILE }
-        <p>Help! I need a Lintercorp Help Center. Not just any Help Center. Help!</p>
+        <p>Help! I need a Lintercorp Help Center. Not just any Help Center Help Center. Help!</p>
       FILE
 
       it 'reports 1 errors' do
@@ -431,7 +434,7 @@ describe ERBLint::Linter::ContentStyle do
         ]
       end
       let(:file) { <<~FILE }
-      The 'App' is not what it seems.
+      <p>The 'App' is not what it seems.</p>
       FILE
 
       it 'reports 1 error' do
@@ -439,8 +442,58 @@ describe ERBLint::Linter::ContentStyle do
       end
 
       it 'reports an error for `\'` and suggests `’`' do
-        expect(linter_errors[0][:message]).to include 'Don\'t use `\'`'
-        expect(linter_errors[0][:message]).to include 'Do use `’`'
+        expect(linter_errors[0][:message]).to include "Don\'t use `\'`"
+        expect(linter_errors[0][:message]).to include "Do use `’`"
+      end
+    end
+
+    context 'when file is rendered html' do
+      violation_set = 'shop'
+      suggestion = 'Store'
+
+      let(:rule_set) do
+        [
+          {
+            'violation' => violation_set,
+            'suggestion' => suggestion
+          }
+        ]
+      end
+      let(:file) { <<~FILE }
+<div id="ContentForDays">
+<script>
+  analytics.track(
+    Cello.Orange.YELLOW,
+    Cello.Orange.aReallyBrightPurple
+  );
+</script>
+ </div>
+  <div class="vermillion">
+    <p>
+      For assistance setting up the Lintercorp shop,
+      <a target="_blank" href="https://lintercorp.shop.com">visit the Lintercorp Docs Centre</a>.
+    </p>
+    <p>
+      Holler at our help team at
+      <a href="mailto:beta@shop.com"></a>.
+      You'll never hear from us.
+    </p>
+  </div>
+    <script src="//shop.lintercorp.com/"></script>
+    <script type="text/javascript">
+      Lintercorp.init({
+        shopBrown: "https://newshop.shop.lintercorp.com",
+        kiwi: shop true,
+      });
+    </script>
+      FILE
+
+      it 'reports 1 error' do
+        expect(linter_errors.size).to eq 1
+      end
+
+      it 'reports an error for `shop` and suggests `store`' do
+        expect(linter_errors[0][:message]).to include 'Don\'t use `shop'
       end
     end
 
@@ -459,7 +512,7 @@ describe ERBLint::Linter::ContentStyle do
         ]
       end
       let(:file) { <<~FILE }
-      The -65 and the –$65
+      <div>The -65 and the –$65</div>
       FILE
 
       it 'reports 1 error' do
@@ -472,102 +525,102 @@ describe ERBLint::Linter::ContentStyle do
       end
     end
 
-    context 'when addendum is present' do
-      violation_set_1 = 'App'
-      suggestion_1 = 'app'
-      violation_set_2 = 'Apps'
-      suggestion_2 = 'apps'
+    # context 'when addendum is present' do
+    #   violation_set_1 = 'App'
+    #   suggestion_1 = 'app'
+    #   violation_set_2 = 'Apps'
+    #   suggestion_2 = 'apps'
 
-      let(:linter_config) do
-        {
-          'rule_set' => rule_set,
-          'addendum' => addendum
-        }
-      end
+    #   let(:linter_config) do
+    #     {
+    #       'rule_set' => rule_set,
+    #       'addendum' => addendum
+    #     }
+    #   end
 
-      let(:rule_set) do
-        [
-          {
-            'violation' => violation_set_1,
-            'suggestion' => suggestion_1
-          },
-          {
-            'violation' => violation_set_2,
-            'suggestion' => suggestion_2
-          }
-        ]
-      end
-      let(:addendum) { 'Addendum!' }
+    #   let(:rule_set) do
+    #     [
+    #       {
+    #         'violation' => violation_set_1,
+    #         'suggestion' => suggestion_1
+    #       },
+    #       {
+    #         'violation' => violation_set_2,
+    #         'suggestion' => suggestion_2
+    #       }
+    #     ]
+    #   end
+    #   let(:addendum) { 'Addendum!' }
 
-      context 'when file is empty' do
-        let(:file) { '' }
+    #   context 'when file is empty' do
+    #     let(:file) { '' }
 
-        it 'does not report any errors' do
-          expect(linter_errors).to eq []
-        end
-      end
+    #     it 'does not report any errors' do
+    #       expect(linter_errors).to eq []
+    #     end
+    #   end
 
-      context 'when file contains violation' do
-        let(:file) { <<~FILE }
-          <p>All about that App</p>
-        FILE
+    #   context 'when file contains violation' do
+    #     let(:file) { <<~FILE }
+    #       <p>All about that App</p>
+    #     FILE
 
-        it 'reports 1 error' do
-          expect(linter_errors.size).to eq 1
-        end
+    #     it 'reports 1 error' do
+    #       expect(linter_errors.size).to eq 1
+    #     end
 
-        it 'reports an error with its message ending with the addendum' do
-          expect(linter_errors.first[:message]).to end_with addendum
-        end
-      end
-    end
+    #     it 'reports an error with its message ending with the addendum' do
+    #       expect(linter_errors.first[:message]).to end_with addendum
+    #     end
+    #   end
+    # end
 
-    context 'when addendum is absent' do
-      violation_set_1 = 'App'
-      suggestion_1 = 'app'
-      violation_set_2 = 'Apps'
-      suggestion_2 = 'apps'
+    # context 'when addendum is absent' do
+    #   violation_set_1 = 'App'
+    #   suggestion_1 = 'app'
+    #   violation_set_2 = 'Apps'
+    #   suggestion_2 = 'apps'
 
-      let(:rule_set) do
-        [
-          {
-            'violation' => violation_set_1,
-            'suggestion' => suggestion_1
-          },
-          {
-            'violation' => violation_set_2,
-            'suggestion' => suggestion_2
-          }
-        ]
-      end
+    #   let(:rule_set) do
+    #     [
+    #       {
+    #         'violation' => violation_set_1,
+    #         'suggestion' => suggestion_1
+    #       },
+    #       {
+    #         'violation' => violation_set_2,
+    #         'suggestion' => suggestion_2
+    #       }
+    #     ]
+    #   end
 
-      context 'when file is empty' do
-        violation_set_1 = 'App'
-        suggestion_1 = 'app'
-        violation_set_2 = 'Apps'
-        suggestion_2 = 'apps'
-        let(:linter_config) do
-          {
-            'rule_set' => rule_set
-          }
-        end
-        let(:rule_set) do
-          [
-            {
-              'violation' => violation_set_1,
-              'suggestion' => suggestion_1
-            },
-            {
-              'violation' => violation_set_2,
-              'suggestion' => suggestion_2
-            }
-          ]
-        end
-        let(:file) { '' }
-        it 'does not report any errors' do
-          expect(linter_errors).to eq []
-        end
-      end
-    end
+    #   context 'when file is empty' do
+    #     violation_set_1 = 'App'
+    #     suggestion_1 = 'app'
+    #     violation_set_2 = 'Apps'
+    #     suggestion_2 = 'apps'
+    #     let(:linter_config) do
+    #       {
+    #         'rule_set' => rule_set
+    #       }
+    #     end
+    #     let(:rule_set) do
+    #       [
+    #         {
+    #           'violation' => violation_set_1,
+    #           'suggestion' => suggestion_1
+    #         },
+    #         {
+    #           'violation' => violation_set_2,
+    #           'suggestion' => suggestion_2
+    #         }
+    #       ]
+    #     end
+    #     let(:file) { '' }
+    #     it 'does not report any errors' do
+    #       expect(linter_errors).to eq []
+    #     end
+    #   end
+    # end
   end
 end

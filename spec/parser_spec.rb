@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'content_style'
 
-describe ERBLint::Parser do
+describe ContentStyle::Parser do
   describe '#parse' do
     context 'when the file is empty' do
       let(:file) { '' }
@@ -10,7 +10,7 @@ describe ERBLint::Parser do
       it 'returns a document fragment with only the end marker as a child' do
         expect(described_class.parse(file).class).to eq Nokogiri::HTML::DocumentFragment
         expect(described_class.parse(file).children.size).to eq 1
-        expect(described_class.parse(file).child.name).to eq ERBLint::Parser::END_MARKER_NAME
+        expect(described_class.parse(file).child.name).to eq ContentStyle::Parser::END_MARKER_NAME
       end
     end
 

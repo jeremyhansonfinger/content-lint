@@ -1,20 +1,19 @@
 # frozen_string_literal: true
-require 'nokogiri'
-require 'htmlentities'
-require 'uri'
-# require 'pry'
 
-module ERBLint
+require 'nokogiri'
+require 'uri'
+
+module ContentStyle
   # Contains the logic for generating the file tree structure used by linters.
   module Parser
-    END_MARKER_NAME = 'erb_lint_end_marker'
+    END_MARKER_NAME = 'content_style_end_marker'
 
     class << self
       def parse(file_content)
         final_file_content = add_end_marker(file_content)
 
         file_tree = Nokogiri::HTML.fragment(final_file_content)
-        
+
         file_tree
       end
 
@@ -37,39 +36,36 @@ module ERBLint
       end
 
       def strip_uris(text)
-        uris = URI.extract(text)
-        uri_length = []
-        if uris
-          uris.each do |u|
-            uri_length.push(u.to_s.length)
-          end
-          uri_hash = Hash[uris.zip(uri_length)]
-          uri_hash.each do |k, v|
-            xs = 'x' * v
-            text.gsub!(k, xs)
-          end
+        # uris = URI.extract(text)
+        # uri_length = []
+        # if uris
+        #   uris.each do |u|
+        #     uri_length.push(u.to_s.length)
+        #   end
+        #   uri_hash = Hash[uris.zip(uri_length)]
+        #   uri_hash.each do |k, v|
+        #     xs = 'x' * v
+        #     text.gsub!(k, xs)
+        #   end
           text
-        end
+        # end
       end
 
       def strip_emails(text)
-        emails = /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\z/.match(text).to_a
-        email_length = []
-        if emails
-          emails.each do |e|
-            email_length.push(e.to_s.length)
-          end
-          email_hash = Hash[emails.zip(email_length)]
-          email_hash.each do |k, v|
-            xs = 'x' * v
-            text.gsub!(k, xs)
-          end
+        # emails = /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\z/.match(text).to_a
+        # email_length = []
+        # if emails
+        #   emails.each do |e|
+        #     email_length.push(e.to_s.length)
+        #   end
+        #   email_hash = Hash[emails.zip(email_length)]
+        #   email_hash.each do |k, v|
+        #     xs = 'x' * v
+        #     text.gsub!(k, xs)
+        #   end
           text
-        end
+        # end
       end
-    end
-
-    class ParseError < StandardError
     end
   end
 end

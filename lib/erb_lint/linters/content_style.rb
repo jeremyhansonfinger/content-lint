@@ -6,7 +6,6 @@ module ERBLint
   class Linter
     # Checks for content style guide violations in the text nodes of HTML files.
     class ContentStyle < Linter
-      include LinterRegistry
 
       def initialize(config)
         @content_ruleset = []
@@ -93,8 +92,8 @@ module ERBLint
           clean_text = text.gsub(/#{suggestion}/, xs)
           # Need to write a better test for this
           case_insensitive = content_rule[:case_insensitive] == true
-          match_case_insensitive = /\b(#{violating_pattern})\b/i.match(clean_text)
-          match_case_sensitive = /\b(#{violating_pattern})\b/.match(clean_text)
+          match_case_insensitive = /(#{violating_pattern})\b/i.match(clean_text)
+          match_case_sensitive = /(#{violating_pattern})\b/.match(clean_text)
           match_ignoring_initial_cap_violations = /[^\.]\s(#{violating_pattern})\b/.match(clean_text)
           if case_insensitive
             match_case_insensitive

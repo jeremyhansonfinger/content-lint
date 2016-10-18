@@ -3,23 +3,23 @@
 
 require 'erb_lint'
 require 'YAML'
-# require 'pry'
 
 command = ARGV[0]
-file_path = File.expand_path(command)
-file = File.read(file_path)
-linter_config = YAML.load(File.read('config/config.yml'))
-config = linter_config.dig('linters', 'ContentStyle')
-linter = ERBLint::Linter::ContentStyle.new(config)
+config_file = YAML.load(File.read('config/config.yml'))
+config = config_file.dig('linters', 'ContentStyle')
+dir_path = File.expand_path(command)
+@linter = ERBLint::Linter::ContentStyle.new(config)
+files = Dir.glob(dir_path + '/**/*.html')
 
-errors = linter.lint_file(ERBLint::Parser.parse(file))
-
-if errors
-  puts config.fetch('addendum', '')
+files.each do |file|
+  file_content = File.read(file)
+  file_path = File.expand_path(file)
+  @violations = @linter.lint_file(ERBLint::Parser.parse(file_content))
+  @violations.each do |v|
+    m = v[:message]
+    l = v[:line]
+    puts file_path.to_s + ":#{l}: #{m}"
+  end
 end
 
-errors.each do |e|
-  m = e[:message]
-  l = e[:line]
-  puts file_path.to_s + ":#{l}: #{m}"
-end
+puts config.fetch('addendum', '') if @violations

@@ -2,11 +2,13 @@
 
 require 'nokogiri'
 require 'parser'
+require 'pry'
 
 module ContentStyle
   # Checks for content style guide violations in the text nodes of HTML files.
   class Linter
     def initialize(config)
+      @exceptions = config.fetch('exceptions', [])
       @content_ruleset = []
       config.fetch('rule_set', []).each do |rule|
         suggestion = rule.fetch('suggestion', '')
@@ -89,7 +91,7 @@ module ContentStyle
       @content_ruleset.select do |content_rule|
         violating_pattern = content_rule[:violating_pattern]
         suggestion = content_rule[:suggestion]
-        clean_text = strip_suggestions_from_text(suggestion, text)
+        clean_text = strip_suggestions_and_exceptions_from_text(suggestion, @exceptions, text)
         case_insensitive = content_rule[:case_insensitive] == true
         match_case_insensitive = /(#{violating_pattern})\b/i.match(clean_text)
         match_case_sensitive = /(#{violating_pattern})\b/.match(clean_text)
@@ -104,9 +106,14 @@ module ContentStyle
       end
     end
 
-    def strip_suggestions_from_text(suggestion, text)
-      xs = 'x' * suggestion.length
-      text.gsub(/#{suggestion}/, xs)
+    def strip_suggestions_and_exceptions_from_text(suggestion, exceptions, text)
+      suggestion_exes = 'x' * suggestion.length
+      working_text = text.gsub(/#{suggestion}\b/, suggestion_exes)
+      exceptions.each do |exception|
+        exception_exes = 'x' * exception.length
+        working_text.gsub!(/#{exception}\b/, exception_exes)
+      end
+      working_text
     end
 
     def suggestion_lowercase_violation_uppercase(suggestion, violating_pattern)

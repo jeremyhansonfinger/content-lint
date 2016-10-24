@@ -6,7 +6,8 @@ describe ContentStyle::Linter do
   let(:linter_config) do
     {
       'rule_set' => rule_set,
-      'addendum' => 'Questions? Contact Lintercorp Product Content at product-content@lintercorp.com.'
+      'addendum' => 'Questions? Contact Lintercorp Product Content at product-content@lintercorp.com.',
+      'exceptions' => ['pantry', 'chrysanthemums']
     }
   end
 
@@ -58,6 +59,35 @@ describe ContentStyle::Linter do
       end
     end
 
+    context 'when file contains three violations, two of which are exceptions' do
+      violation_set = ['dropdown', 'drop down', 'pantry', 'chrysanthemums']
+      suggestion = 'drop-down'
+      case_insensitive = true
+
+      let(:rule_set) do
+        [
+          {
+            'violation' => violation_set,
+            'suggestion' => suggestion,
+            'case_insensitive' => case_insensitive
+          }
+        ]
+      end
+
+      let(:file) { <<~FILE }
+        <p>The dropdown menu is a pantry of chrysanthemums</p>
+      FILE
+
+      it 'reports 2 errors' do
+        expect(linter_errors.size).to eq 1
+      end
+
+      it 'reports errors for `dropdown` and suggest `drop-down`' do
+        expect(linter_errors[0][:message]).to include 'Don\'t use `dropdown`'
+        expect(linter_errors[0][:message]).to include 'Do use `drop-down`'
+      end
+    end
+
     context 'when suggestion is prefix + violation' do
       violation_set = ['Help Center', 'help center']
       suggestion = 'Lintercorp Help Center'
@@ -71,9 +101,7 @@ describe ContentStyle::Linter do
         ]
       end
 
-
-#something is wrong with this test
-
+      # If I want it to pick up multiples in one line I need to add another piece of information to make it unique.
       let(:file) { <<~FILE }
         <p>Help! I need a Lintercorp Help Center. Not just any Help Center Help Center. Help!</p>
       FILE

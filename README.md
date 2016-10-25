@@ -1,4 +1,4 @@
-# content-style [![Build Status](https://travis-ci.org/jeremyhansonfinger/content-style.svg?branch=master)](https://travis-ci.org//jeremyhansonfinger/content-style)
+# content-style [![Build Status](https://travis-ci.org/jeremyhansonfinger/content-style.svg?branch=master)](https://travis-ci.org/jeremyhansonfinger/content-style)
 
 `content-style` is a tool to help lint your HTML files for content style violations.
 

@@ -51,24 +51,18 @@ module ContentStyle
         s = StringScanner.new(text_node.text)
         if s.check_until(/\n/)
           while (line_content = s.scan_until(/\n/))
-            index_multilines(line_content, current_line_number, lines)
+            clean_lines(line_content, current_line_number, lines)
             current_line_number += 1
           end
         else
           line_content = text_node.text
-          index_single_lines(line_content, current_line_number, lines)
+          clean_lines(line_content, current_line_number, lines)
         end
       end
       lines
     end
 
-    def index_multilines(line_content, current_line_number, lines)
-      uri_free_line_content = Parser.strip_uris(line_content)
-      final_line_content = Parser.strip_emails(uri_free_line_content)
-      lines.push(text: final_line_content, number: current_line_number)
-    end
-
-    def index_single_lines(line_content, current_line_number, lines)
+    def clean_lines(line_content, current_line_number, lines)
       uri_free_line_content = Parser.strip_uris(line_content)
       final_line_content = Parser.strip_emails(uri_free_line_content)
       lines.push(text: final_line_content, number: current_line_number)

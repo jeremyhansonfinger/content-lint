@@ -497,7 +497,7 @@ describe ContentStyle::Linter do
 
       it 'reports an error for `\'` and suggests `’`' do
         expect(linter_errors[0][:message]).to include "Don\'t use `App`"
-        expect(linter_errors[0][:message]).to include "Do use `app`"
+        expect(linter_errors[0][:message]).to include 'Do use `app`'
       end
     end
 

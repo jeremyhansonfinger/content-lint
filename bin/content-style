@@ -5,7 +5,6 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'content_style'
 require 'YAML'
-require 'pry'
 
 command = ARGV[0]
 

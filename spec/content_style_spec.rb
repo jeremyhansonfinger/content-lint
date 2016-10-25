@@ -7,7 +7,7 @@ describe ContentStyle::Linter do
     {
       'rule_set' => rule_set,
       'addendum' => 'Questions? Contact Lintercorp Product Content at product-content@lintercorp.com.',
-      'exceptions' => ['pantry', 'chrysanthemums']
+      'exceptions' => %w(pantry chrysanthemums)
     }
   end
 
@@ -78,7 +78,7 @@ describe ContentStyle::Linter do
         <p>The dropdown menu is a pantry of chrysanthemums</p>
       FILE
 
-      it 'reports 2 errors' do
+      it 'reports 1 error' do
         expect(linter_errors.size).to eq 1
       end
 

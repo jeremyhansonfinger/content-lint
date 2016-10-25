@@ -10,5 +10,5 @@ Gemfile.lock
 # Bundle configs
 .bundle
 
-# Config
-config/*
+# Temp
+tmp

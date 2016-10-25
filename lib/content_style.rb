@@ -2,7 +2,6 @@
 
 require 'nokogiri'
 require 'parser'
-require 'pry'
 
 module ContentStyle
   # Checks for content style guide violations in the text nodes of HTML files.

@@ -5,8 +5,10 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
 require 'content_style'
 require 'YAML'
+require 'pry'
 
 command = ARGV[0]
+
 dir_path = File.expand_path(command)
 config_path = File.read(File.join(Dir.pwd, '/config/content-style.yml'))
 config_file = YAML.load(config_path)

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'content_style'
-
 describe ContentStyle::Parser do
   describe '#parse' do
     context 'when the file is empty' do

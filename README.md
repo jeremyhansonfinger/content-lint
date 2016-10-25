@@ -32,6 +32,8 @@ The configuration comes from a `content-style.yml` file located in the `config` 
 ContentStyle:
   enabled: true
   filetype: 'html'
+  exceptions:
+    - manual change
   addendum: 'Questions? Keep them to yourself.' 
   rule_set:
     - violation:
@@ -84,13 +86,14 @@ Option | Description
 `case_insensitive`     | A Boolean value that determines whether the rule is case sensitive. (Optional, defaults to false if not included)
 `pattern_description`  | A string that appears in place of the regex pattern as the violation in the error message. (Optional) 
 `addendum`             | A string to be included at the end of every error message of the rule set. (Optional)
+`exception`            | A list of strings that specify violations to ignore. (Case-sensitive, optional)
 
 ## Usage
 
 Once content-style is installed and confiured, running the following command in your shell:
 
 ```shell
-bundle exec content-lint absolute/path/to/your/html/files
+bundle exec content-lint relative/or/absolute/path/to/your/html/files
 ```
 
 results in the following lines being written to stdout (which can be redirected as required):

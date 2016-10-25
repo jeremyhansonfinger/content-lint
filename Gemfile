@@ -6,3 +6,4 @@ source 'https://rubygems.org'
 
 gem 'rubocop', '~> 0.40.0', require: false
 gem 'aruba', '~> 0.14.2', require: false
+gem 'rspec', '~> 3.5.0'

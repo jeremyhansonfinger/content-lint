@@ -1,30 +1,32 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), *%w(.. lib))
-
 require 'content_style'
-require 'YAML'
+require 'yaml'
 
-command = ARGV[0]
-
-dir_path = File.expand_path(command)
-config_path = File.read(File.join(Dir.pwd, '/config/content-style.yml'))
+config_path = File.read(File.join(Dir.pwd, 'config', 'content-style.yml'))
 config_file = YAML.load(config_path)
 config = config_file.fetch('ContentStyle')
 filetype = config.fetch('filetype')
-@linter = ContentStyle::Linter.new(config)
-files = Dir.glob(dir_path + '/**/*.' + filetype)
 
-files.each do |file|
+command = ARGV[0] || Dir.pwd
+dir_path = File.expand_path(command)
+files = Dir.glob(File.join(dir_path, '**', "*.#{filetype}"))
+puts command
+linter = ContentStyle::Linter.new(config)
+
+violations = files.flat_map do |file|
   file_content = File.read(file)
   file_path = File.expand_path(file)
-  @violations = @linter.lint_file(ContentStyle::Parser.parse(file_content))
-  @violations.each do |v|
+  linter.lint_file(ContentStyle::Parser.parse(file_content)).map do |v|
     m = v[:message]
     l = v[:line]
-    puts file_path.to_s + ":#{l}: #{m}"
+    "#{file_path}:#{l}: #{m}"
   end
 end
 
-puts config.fetch('addendum', '') if @violations
+violations.each do |msg|
+  puts msg
+end
+
+puts config.fetch('addendum', '') unless violations.empty?

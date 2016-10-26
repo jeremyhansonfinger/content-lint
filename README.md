@@ -93,7 +93,7 @@ Option | Description
 Once content-style is installed and confiured, running the following command in your shell:
 
 ```shell
-bundle exec content-lint relative/or/absolute/path/to/your/html/files
+bundle exec content-style relative/or/absolute/path/to/your/html/files
 ```
 
 results in the following lines being written to stdout (which can be redirected as required):

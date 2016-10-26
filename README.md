@@ -17,7 +17,7 @@
 Add the following to your `gemfile` and run `bundle install`:
 
 ```ruby
-gem 'content-style', git: 'git@github.com:jeremyhansonfinger/content-style'
+gem 'content-style', git: 'https://github.com/jeremyhansonfinger/content-style'
 ```
 
 You may run into problems installing nokogiri because it's the worst. If the install fails, try [this resource](http://www.nokogiri.org/tutorials/installing_nokogiri.html) or google `nokogiri won't install` because lots of people have the same problem.

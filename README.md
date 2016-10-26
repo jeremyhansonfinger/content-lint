@@ -33,7 +33,7 @@ ContentStyle:
   enabled: true
   filetype: 'html'
   exceptions:
-    - manual change
+    - 'manual change'
   addendum: 'Questions? Keep them to yourself.' 
   rule_set:
     - violation:

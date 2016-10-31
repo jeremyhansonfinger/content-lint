@@ -52,7 +52,8 @@ module ContentStyle
       end
 
       def strip_emails(text)
-        emails = /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\z/.match(text).to_a
+        email_pattern = /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\z/
+        emails = email_pattern.match(text).to_a || []
         email_length = []
         if emails
           emails.each do |e|

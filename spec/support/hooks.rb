@@ -16,10 +16,13 @@ ContentStyle:
   exceptions:
     - 'manual change'
     - 'Amazon docs'
+  excluded_files:
+    - 'test/html/exclusion_test.html'
   rule_set:
     - violation:
         - 'dropdown'
         - 'drop down'
+        - 'droop down'
       case_insensitive: true
       suggestion: 'drop-down'
 FILE
@@ -33,9 +36,20 @@ FILE
       You'll never hear from us.
     </p>
 FILE
+
+    excluded_file = 'test/html/exclusion_test.html'
+    excluded_content = <<~FILE
+    <p>
+      Holler at our droop down team at
+      <a href="mailto:beta@shop.com"></a>.
+      You'll never hear from us.
+    </p>
+FILE
+
     create_directory(config_directory)
     write_file(config_file, config_content)
     create_directory(html_directory)
     write_file(html_file, html_content)
+    write_file(excluded_file, excluded_content)
   end
 end

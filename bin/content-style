@@ -8,6 +8,11 @@ config_path = File.read(File.join(Dir.pwd, 'config', 'content-style.yml'))
 config_file = YAML.load(config_path)
 config = config_file.fetch('ContentStyle')
 filetype = config.fetch('filetype')
+excluded_files = config.fetch('excluded_files') || []
+excluded_file_paths =
+  excluded_files.map do |excluded_file|
+    File.expand_path(excluded_file)
+  end
 
 command = ARGV[0] || Dir.pwd
 dir_path = File.expand_path(command)
@@ -18,6 +23,7 @@ linter = ContentStyle::Linter.new(config)
 violations = files.flat_map do |file|
   file_content = File.read(file)
   file_path = File.expand_path(file)
+  next if excluded_file_paths.include?(file_path)
   linter.lint_file(ContentStyle::Parser.parse(file_content)).map do |v|
     m = v[:message]
     l = v[:line]

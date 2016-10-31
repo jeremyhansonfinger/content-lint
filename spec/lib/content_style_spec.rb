@@ -88,6 +88,64 @@ describe ContentStyle::Linter do
       end
     end
 
+    context 'when file contains two violations, one of which is in a URL' do
+      violation_set = ['dropdown', 'drop down', 'merchant']
+      suggestion = 'drop-down'
+      case_insensitive = true
+
+      let(:rule_set) do
+        [
+          {
+            'violation' => violation_set,
+            'suggestion' => suggestion,
+            'case_insensitive' => case_insensitive
+          }
+        ]
+      end
+
+      let(:file) { <<~FILE }
+        <p>The dropdown menu takes you to http://merchant.com</p>
+      FILE
+
+      it 'reports 1 error' do
+        expect(linter_errors.size).to eq 1
+      end
+
+      it 'reports errors for `dropdown` and suggest `drop-down`' do
+        expect(linter_errors[0][:message]).to include 'Don\'t use `dropdown`'
+        expect(linter_errors[0][:message]).to include 'Do use `drop-down`'
+      end
+    end
+
+    context 'when file contains two violations, one of which is in an email address' do
+      violation_set = ['dropdown', 'drop down', 'merchant']
+      suggestion = 'drop-down'
+      case_insensitive = true
+
+      let(:rule_set) do
+        [
+          {
+            'violation' => violation_set,
+            'suggestion' => suggestion,
+            'case_insensitive' => case_insensitive
+          }
+        ]
+      end
+
+      let(:file) { <<~FILE }
+        <p>The dropdown menu opens an email to merchant@gmail.com</p>
+      FILE
+
+      it 'reports 1 error' do
+        expect(linter_errors.size).to eq 1
+      end
+
+      it 'reports errors for `dropdown` and suggest `drop-down`' do
+        expect(linter_errors[0][:message]).to include 'Don\'t use `dropdown`'
+        expect(linter_errors[0][:message]).to include 'Do use `drop-down`'
+      end
+    end
+
     context 'when suggestion is prefix + violation' do
       violation_set = ['Help Center', 'help center']
       suggestion = 'Lintercorp Help Center'

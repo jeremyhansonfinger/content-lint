@@ -10,9 +10,7 @@ module ContentStyle
 
     class << self
       def parse(file_content)
-        final_file_content = add_end_marker(file_content)
-
-        file_tree = Nokogiri::HTML.fragment(final_file_content)
+        file_tree = Nokogiri::HTML.fragment(file_content)
 
         file_tree
       end
@@ -24,15 +22,6 @@ module ContentStyle
 
       def get_text_nodes(nodes)
         nodes.search('.//text()[not(self::script)]')
-      end
-
-      def add_end_marker(file_content)
-        file_content + <<~END_MARKER.chomp
-          <#{END_MARKER_NAME}>
-            This is used to calculate the line number of the last line.
-            This is only necessary until Text#line is fixed in Nokogiri.
-          </#{END_MARKER_NAME}>
-        END_MARKER
       end
 
       def strip_uris(text)

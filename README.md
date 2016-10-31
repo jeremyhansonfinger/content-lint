@@ -34,6 +34,8 @@ ContentStyle:
   filetype: 'html'
   exceptions:
     - 'manual change'
+  excluded_files:
+    - 'test/html/worst-file-ever.html'
   addendum: 'Questions? Keep them to yourself.' 
   rule_set:
     - violation:
@@ -87,7 +89,8 @@ Option | Description
 `pattern_description`  | A string that appears in place of the regex pattern as the violation in the error message. (Optional) 
 `addendum`             | A string to be included at the end of every error message of the rule set. (Optional)
 `exception`            | A list of strings that specify violations to ignore. (Case-sensitive, optional)
-
+`excluded_files`       | A list of relative or absolute file paths to files that should be ignored. (
+Optional.)
 ## Usage
 
 Once content-style is installed and confiured, running the following command in your shell:

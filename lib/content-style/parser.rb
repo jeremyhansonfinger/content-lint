@@ -7,7 +7,6 @@ module ContentStyle
   # Contains the logic for generating the file tree structure used by linters.
   module Parser
     END_MARKER_NAME = 'content_style_end_marker'
-
     class << self
       def parse(file_content)
         final_file_content = add_end_marker(file_content)
@@ -27,12 +26,10 @@ module ContentStyle
       end
 
       def add_end_marker(file_content)
-        file_content + <<~END_MARKER.chomp
-          <#{END_MARKER_NAME}>
-            This is used to calculate the line number of the last line.
-            This is only necessary until Text#line is fixed in Nokogiri.
-          </#{END_MARKER_NAME}>
-        END_MARKER
+        end_marker = "<#{END_MARKER_NAME}>content style end marker</#{END_MARKER_NAME}>"
+        file_content + end_marker
+        # This is used to calculate the line number of the last line. This
+        # is only necessary until Text#line is fixed in Nokogiri.
       end
 
       def strip_uris(text)
@@ -52,7 +49,7 @@ module ContentStyle
       end
 
       def strip_emails(text)
-        emails = /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\z/.match(text).to_a
+        emails = /[^@\s]+@([^@\s]+\.)+[^@\s]+/.match(text).to_a
         email_length = []
         if emails
           emails.each do |e|

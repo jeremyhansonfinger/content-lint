@@ -13,6 +13,7 @@ ContentStyle:
   enabled: true
   addendum: 'Questions?'
   filetype: 'html'
+  csv: true
   exceptions:
     - 'manual change'
     - 'Amazon docs'
@@ -45,7 +46,6 @@ FILE
       You'll never hear from us.
     </p>
 FILE
-
     create_directory(config_directory)
     write_file(config_file, config_content)
     create_directory(html_directory)

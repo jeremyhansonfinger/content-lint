@@ -8,7 +8,8 @@ config_path = File.read(File.join(Dir.pwd, 'config', 'content-style.yml'))
 config_file = YAML.load(config_path)
 config = config_file.fetch('ContentStyle')
 filetype = config.fetch('filetype')
-excluded_files = config.fetch('excluded_files') || []
+excluded_files = config.fetch('excluded_files', [])
+csv = config.fetch('csv', false)
 excluded_file_paths =
   excluded_files.map do |excluded_file|
     File.expand_path(excluded_file)
@@ -36,3 +37,16 @@ violations.each do |msg|
 end
 
 puts config.fetch('addendum', '') unless violations.empty?
+
+if csv
+  csv_path = command + '/content-style-output.csv'
+  output_csv = File.open(csv_path, 'w')
+  output_csv.puts ['File,Line,Violation']
+  violations.each do |msg|
+    csv_msg = msg.to_s.gsub(/\:|\: /, ',')
+                 .delete(command + '/')
+    output_csv.puts csv_msg
+  end
+  results_location = 'CSV of results is located at ' + csv_path
+  puts results_location
+end

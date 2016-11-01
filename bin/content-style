@@ -18,7 +18,7 @@ excluded_file_paths =
 command = ARGV[0] || Dir.pwd
 dir_path = File.expand_path(command)
 files = Dir.glob(File.join(dir_path, '**', "*.#{filetype}"))
-puts command
+puts "Working directory: #{command}"
 linter = ContentStyle::Linter.new(config)
 
 violations = files.flat_map do |file|
@@ -33,20 +33,22 @@ violations = files.flat_map do |file|
 end
 
 violations.each do |msg|
-  puts msg
+  msg_string = msg.to_s
+  stdout_msg = msg_string.gsub(dir_path, command)
+  puts stdout_msg
 end
 
 puts config.fetch('addendum', '') unless violations.empty?
 
 if csv
-  csv_path = command + '/content-style-output.csv'
+  csv_path = "#{command}/content-style-output.csv"
   output_csv = File.open(csv_path, 'w')
   output_csv.puts ['File,Line,Violation']
   violations.each do |msg|
-    csv_msg = msg.to_s.gsub(/\:|\: /, ',')
-                 .delete(command + '/')
+    msg_string = msg.to_s
+    csv_msg = msg_string.gsub(/\:|\: /, ',').gsub(dir_path, command)
     output_csv.puts csv_msg
   end
-  results_location = 'CSV of results is located at ' + csv_path
+  results_location = "CSV of results is located at #{csv_path}"
   puts results_location
 end

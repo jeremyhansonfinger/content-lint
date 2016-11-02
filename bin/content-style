@@ -25,6 +25,7 @@ violations = files.flat_map do |file|
   file_content = File.read(file)
   file_path = File.expand_path(file)
   next if excluded_file_paths.include?(file_path)
+  next if file_content.empty?
   hotcop_identifiers = ContentStyle::Parser.get_erb_locations(file_content)
   linter.lint_file(ContentStyle::Parser.parse(file_content)).map do |v|
     hotcop_identifiers.reverse.each do |id|

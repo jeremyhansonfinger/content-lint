@@ -31,11 +31,19 @@ FILE
     html_directory = 'test/html'
     html_file = 'test/html/test.html'
     html_content = <<~FILE
+    <!-- HOTCOP START
+        Type: template
+        Identifier: before.html.erb
+    -->
     <p>
       Holler at our dropdown team at
       <a href="mailto:beta@shop.com"></a>.
       You'll never hear from us.
     </p>
+     <!-- HOTCOP START
+        Type: template
+        Identifier: after.html.erb
+    -->
 FILE
 
     excluded_file = 'test/html/exclusion_test.html'

@@ -15,12 +15,25 @@ describe ContentStyle::Parser do
     context 'when the files has html comments' do
       let(:file) { <<~FILE }
         <!-- START
-        Type: template
-        Identifier: show.html.erb -->
+           -->
       FILE
 
       it 'returns a document fragment with an html comment as a child' do
         expect(described_class.parse(file).child.comment?).to eq true
+      end
+    end
+
+    context 'when the files has HOTCOP comments' do
+      let(:file) { <<~FILE }
+        <!-- HOTCOP START
+        Type: template
+        Identifier: show.html.erb
+        -->
+        <p>Other content.</p>
+      FILE
+
+      it 'calculates the correct identifier' do
+        expect(described_class.get_erb_locations(file)).to include({:line => 3, :erb_location => "show.html.erb"})
       end
     end
   end

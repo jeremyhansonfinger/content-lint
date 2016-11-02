@@ -59,6 +59,32 @@ describe ContentStyle::Linter do
       end
     end
 
+    context 'when violating text line is `Check out the dropdown`' do
+      violation_set = ['dropdown', 'drop down']
+      suggestion = 'drop-down'
+      case_insensitive = true
+
+      let(:rule_set) do
+        [
+          {
+            'violation' => violation_set,
+            'suggestion' => suggestion,
+            'case_insensitive' => case_insensitive
+          }
+        ]
+      end
+
+      let(:file) { <<~FILE }
+        <p>Check out the dropdown
+         menu too.
+         </p>
+      FILE
+
+      it 'returns the correct text line' do
+        expect(linter_errors[0][:text]).to eq 'Check out the dropdown'
+      end
+    end
+
     context 'when file contains three violations, two of which are exceptions' do
       violation_set = ['dropdown', 'drop down', 'pantry', 'chrysanthemums']
       suggestion = 'drop-down'

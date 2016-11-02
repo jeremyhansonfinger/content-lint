@@ -73,8 +73,7 @@ module ContentStyle
         pattern_description = violated_rule[:pattern_description]
         violation = pattern_description.empty? ? violated_rule[:violating_pattern] : pattern_description
         {
-          line: line_number,
-          message: "Don't use `#{violation}`. Do use `#{suggestion}`.".strip # #{@addendum}".strip
+          line: line_number, text: text.strip, message: "Don't use `#{violation}`. Do use `#{suggestion}`.".strip
         }
       end
     end

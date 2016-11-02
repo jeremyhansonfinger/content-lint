@@ -16,6 +16,28 @@ module ContentStyle
         file_tree
       end
 
+      def get_erb_locations(file_content)
+        hotcop_lines = []
+        hotcop_identifiers = []
+        current_line_number = 1
+        s = StringScanner.new(file_content)
+        while (line_content = s.scan_until(/\n/))
+          if line_content =~ /HOTCOP START/
+            identifier_line_number = current_line_number + 2
+            hotcop_lines.push(identifier_line_number)
+          end
+          if current_line_number == hotcop_lines.last
+            identifier = /Identifier\: (.*)/.match(line_content)[1]
+            hotcop_identifiers.push(
+              line: current_line_number,
+              erb_location: identifier
+            )
+          end
+          current_line_number += 1
+        end
+        hotcop_identifiers
+      end
+
       def file_is_empty?(file_tree)
         top_level_elements = file_tree.children
         top_level_elements.size == 1 && top_level_elements.last.name == END_MARKER_NAME

@@ -11,6 +11,18 @@ describe ContentStyle::Parser do
         expect(described_class.parse(file).child.name).to eq ContentStyle::Parser::END_MARKER_NAME
       end
     end
+
+    context 'when the files has html comments' do
+      let(:file) { <<~FILE }
+        <!-- START
+        Type: template
+        Identifier: show.html.erb -->
+      FILE
+
+      it 'returns a document fragment with an html comment as a child' do
+        expect(described_class.parse(file).child.comment?).to eq true
+      end
+    end
   end
 
   describe '#file_is_empty?' do

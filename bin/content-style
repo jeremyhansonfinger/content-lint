@@ -25,10 +25,17 @@ violations = files.flat_map do |file|
   file_content = File.read(file)
   file_path = File.expand_path(file)
   next if excluded_file_paths.include?(file_path)
+  hotcop_identifiers = ContentStyle::Parser.get_erb_locations(file_content)
   linter.lint_file(ContentStyle::Parser.parse(file_content)).map do |v|
-    m = v[:message]
+    hotcop_identifiers.reverse.each do |id|
+      @erb_location = id[:erb_location] if v[:line] > id[:line]
+      next if v[:line] < id[:line]
+    end
+    e = @erb_location
+    t = v[:text]
     l = v[:line]
-    "#{file_path}:#{l}: #{m}"
+    m = v[:message]
+    "#{file_path},#{l},#{t},#{m},#{e}"
   end
 end
 
@@ -43,10 +50,11 @@ puts config.fetch('addendum', '') unless violations.empty?
 if csv
   csv_path = "#{command}/content-style-output.csv"
   output_csv = File.open(csv_path, 'w')
-  output_csv.puts ['File,Line,Violation']
+  output_csv.puts ['Test File,Test File Line,Test File Text,Violation,ERB File']
   violations.each do |msg|
     msg_string = msg.to_s
-    csv_msg = msg_string.gsub(/\:|\: /, ',').gsub(dir_path, command)
+    csv_msg = msg_string.gsub(dir_path, command)
+
     output_csv.puts csv_msg
   end
   results_location = "CSV of results is located at #{csv_path}"

@@ -33,7 +33,7 @@ describe ContentStyle::Parser do
       FILE
 
       it 'calculates the correct identifier' do
-        expect(described_class.get_erb_locations(file)).to include({:line => 3, :erb_location => "show.html.erb"})
+        expect(described_class.get_erb_locations(file)).to include(line: 3, erb_location: 'show.html.erb')
       end
     end
   end

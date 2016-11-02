@@ -32,6 +32,7 @@ The configuration comes from a `content-style.yml` file located in the `config` 
 ContentStyle:
   enabled: true
   filetype: 'html'
+  csv: true
   exceptions:
     - 'manual change'
   excluded_files:
@@ -88,23 +89,32 @@ Option | Description
 `case_insensitive`     | A Boolean value that determines whether the rule is case sensitive. (Optional, defaults to false if not included)
 `pattern_description`  | A string that appears in place of the regex pattern as the violation in the error message. (Optional) 
 `addendum`             | A string to be included at the end of every error message of the rule set. (Optional)
-`exception`            | A list of strings that specify violations to ignore. (Case-sensitive, optional)
+`exceptions`           | A list of strings that specify violations to ignore. (Case-sensitive, optional)
 `excluded_files`       | A list of relative or absolute file paths to files that should be ignored. (
 Optional.)
+`csv`                  | A Boolean value that determines whether content-style should write the output to a csv file. (Optional.)
+
 ## Usage
 
-Once content-style is installed and confiured, running the following command in your shell:
+Once content-style is installed and configured, running the following command in your shell:
 
 ```shell
 bundle exec content-style relative/or/absolute/path/to/your/html/files
 ```
 
-results in the following lines being written to stdout (which can be redirected as required):
+results in the following lines being written to stdout:
 
 ```
-absolute/path/to/your/html/files/file_1.html:48: Don't use `support page`. Do use `Lintercorp Help Center`.
-absolute/path/to/your/html/files/file_1.html:96: Don't use `application`. Do use `app`.
-absolute/path/to/your/html/files/file_2.html:101: Don't use `- (hyphen) or — (em dash) in number ranges`. Do use `— (en dash) in number ranges`.
+relative/path/to/your/html/files/file_1.html:48: Don't use `support page`. Do use `Lintercorp Help Center`.
+relative/path/to/your/html/files/file_1.html:96: Don't use `application`. Do use `app`.
+relative/path/to/your/html/files/file_2.html:101: Don't use `- (hyphen) or — (em dash) in number ranges`. Do use `— (en dash) in number ranges`.
+Questions? Contact the Professional Standards team.
+```
+
+If you enabled `csv`, then you'll also see a line that says:
+
+```
+CSV of results is located at test/html/content-style-output.csv
 ```
 
 ## Testing

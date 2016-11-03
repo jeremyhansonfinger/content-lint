@@ -109,8 +109,9 @@ module ContentStyle
 
     def suggestion_lowercase_violation_uppercase(suggestion, violating_pattern)
       suggestion_first_character_lowercase = suggestion.match(/\A[a-z]/)
-      violation_first_character_uppercase = !violating_pattern.match(/\A[A-Z]/)
-      suggestion_first_character_lowercase && violation_first_character_uppercase
+      violation_first_character_uppercase = violating_pattern.match(/\A[A-Z]/)
+      violation_not_compound = !violating_pattern.match(/[A-Z].*[A-Z]/)
+      suggestion_first_character_lowercase && violation_first_character_uppercase && violation_not_compound
     end
   end
 end

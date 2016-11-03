@@ -203,7 +203,6 @@ describe ContentStyle::Linter do
     context 'when violation starts with uppercase and suggestion starts with lowercase' do
       violation_set = 'Apps'
       suggestion = 'apps'
-
       let(:rule_set) do
         [
           {
@@ -213,7 +212,10 @@ describe ContentStyle::Linter do
         ]
       end
       let(:file) { <<~FILE }
-        <p>Apps, apps, and away. Big Apps and salutations. Did Britney sing apps, I did it again? Apps a daisy.</p>
+        <p>
+        Apps, apps, and away.
+        Big Apps and salutations.
+        </p>
       FILE
 
       it 'reports 1 errors' do
@@ -223,6 +225,9 @@ describe ContentStyle::Linter do
       it 'reports errors for `Apps` and suggests `apps`' do
         expect(linter_errors[0][:message]).to include 'Don\'t use `Apps`'
         expect(linter_errors[0][:message]).to include 'Do use `apps`'
+      end
+      it 'doesn\'t report an error for an initial cap' do
+        expect(linter_errors[0][:text]).not_to include 'Apps, apps, and away'
       end
     end
 

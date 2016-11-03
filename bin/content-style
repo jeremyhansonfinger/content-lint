@@ -3,6 +3,7 @@
 
 require 'content_style'
 require 'yaml'
+require 'pathname'
 
 config_path = File.read(File.join(Dir.pwd, 'config', 'content-style.yml'))
 config_file = YAML.load(config_path)
@@ -32,11 +33,14 @@ violations = files.flat_map do |file|
       @erb_location = id[:erb_location] if v[:line] > id[:line]
       next if v[:line] < id[:line]
     end
-    e = @erb_location
+    erb_location_path = Pathname.new(File.expand_path(@erb_location))
+    root = Pathname.new(File.expand_path(__dir__))
+    e = erb_location_path.relative_path_from root
+    f = file_path
     t = v[:text]
     l = v[:line]
     m = v[:message]
-    "#{file_path},#{l},#{t},#{m},#{e}"
+    "#{f},#{l},#{t},#{m},#{e}"
   end
 end
 
@@ -55,7 +59,6 @@ if csv
   violations.each do |msg|
     msg_string = msg.to_s
     csv_msg = msg_string.gsub(dir_path, command)
-
     output_csv.puts csv_msg
   end
   results_location = "CSV of results is located at #{csv_path}"

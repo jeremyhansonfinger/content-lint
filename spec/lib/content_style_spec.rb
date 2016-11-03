@@ -440,7 +440,7 @@ describe ContentStyle::Linter do
       end
     end
 
-    context 'when one suggestion contains a different violation' do
+    context 'when text includes suggestion that contains a different violation' do
       violation_set_1 = 'online store'
       suggestion_1 = 'Online Store'
       case_insensitive_1 = false
@@ -463,21 +463,22 @@ describe ContentStyle::Linter do
         ]
       end
       let(:file) { <<~FILE }
-<p>
-The online store.
-The Store.
-The Online Store.</p>
+        <p>
+        The online store.
+        The Store.
+        </p>
+        <p>Online Store</p>
       FILE
 
-      it 'reports 1 errors' do
+      it 'reports 2 errors' do
         expect(linter_errors.size).to eq 2
       end
 
-      it 'reports one error for `online store` and suggests `Store` and one for `Store` and suggests `store`' do
+      it 'reports errors for `online store` and `Store` but not `Online Store`' do
         expect(linter_errors[0][:message]).to include 'Don\'t use `online store`'
         expect(linter_errors[0][:message]).to include 'Do use `Online Store`'
         expect(linter_errors[1][:message]).to include 'Don\'t use `Store`'
-        expect(linter_errors[1][:message]).to include 'Do use `store`'
+        expect(linter_errors[1][:text]).not_to include 'Online Store'
       end
     end
 

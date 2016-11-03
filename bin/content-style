@@ -34,8 +34,8 @@ violations = files.flat_map do |file|
       next if v[:line] < id[:line]
     end
     erb_location_path = Pathname.new(File.expand_path(@erb_location))
-    root = Pathname.new(File.expand_path(__dir__))
-    e = erb_location_path.relative_path_from root
+    root = Pathname.new(Dir.pwd)
+    e = erb_location_path.relative_path_from(root)
     f = file_path
     t = v[:text]
     l = v[:line]

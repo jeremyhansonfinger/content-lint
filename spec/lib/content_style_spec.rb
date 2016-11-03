@@ -440,6 +440,47 @@ describe ContentStyle::Linter do
       end
     end
 
+    context 'when one suggestion contains a different violation' do
+      violation_set_1 = 'online store'
+      suggestion_1 = 'Online Store'
+      case_insensitive_1 = false
+      violation_set_2 = 'Store'
+      suggestion_2 = 'store'
+      case_insensitive_2 = false
+
+      let(:rule_set) do
+        [
+          {
+            'violation' => violation_set_1,
+            'suggestion' => suggestion_1,
+            'case_insensitive' => case_insensitive_1
+          },
+          {
+            'violation' => violation_set_2,
+            'suggestion' => suggestion_2,
+            'case_insensitive' => case_insensitive_2
+          }
+        ]
+      end
+      let(:file) { <<~FILE }
+<p>
+The online store.
+The Store.
+The Online Store.</p>
+      FILE
+
+      it 'reports 1 errors' do
+        expect(linter_errors.size).to eq 2
+      end
+
+      it 'reports one error for `online store` and suggests `Store` and one for `Store` and suggests `store`' do
+        expect(linter_errors[0][:message]).to include 'Don\'t use `online store`'
+        expect(linter_errors[0][:message]).to include 'Do use `Online Store`'
+        expect(linter_errors[1][:message]).to include 'Don\'t use `Store`'
+        expect(linter_errors[1][:message]).to include 'Do use `store`'
+      end
+    end
+
     context 'when text node has multiple lines' do
       violation_set_1 = 'App'
       suggestion_1 = 'app'

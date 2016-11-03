@@ -87,6 +87,7 @@ module ContentStyle
         match_case_insensitive = /(#{violating_pattern})\b/i.match(clean_text)
         match_case_sensitive = /(#{violating_pattern})\b/.match(clean_text)
         match_ignoring_initial_cap_violations = /[^\.]\s(#{violating_pattern})\b/.match(clean_text)
+        next unless no_conflicts(@content_ruleset, violating_pattern, suggestion, clean_text) == true
         if case_insensitive
           match_case_insensitive
         elsif !case_insensitive && suggestion_lowercase_violation_uppercase(suggestion, violating_pattern)
@@ -94,6 +95,19 @@ module ContentStyle
         else
           match_case_sensitive
         end
+      end
+    end
+
+    def no_conflicts(content_ruleset, violating_pattern, suggestion, text)
+      suggestions = []
+      content_ruleset.select do |content_rule|
+        suggestions.push(content_rule[:suggestion])
+      end
+      suggestions.any? do |s|
+        true unless
+                 s.include?(violating_pattern) &&
+                 s.length > violating_pattern.length &&
+                 text.include?(s)
       end
     end
 

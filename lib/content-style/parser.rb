@@ -22,7 +22,7 @@ module ContentStyle
         current_line_number = 1
         s = StringScanner.new(file_content)
         while (line_content = s.scan_until(/\n/))
-          if line_content =~ /HOTCOP START$/
+          if line_content =~ /HOTCOP START/
             identifier_line_number = current_line_number + 2
             hotcop_lines.push(identifier_line_number)
           end

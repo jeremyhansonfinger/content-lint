@@ -4,6 +4,7 @@
 require 'content_style'
 require 'yaml'
 require 'pathname'
+require 'csv'
 
 config_path = File.read(File.join(Dir.pwd, 'config', 'content-style.yml'))
 config_file = YAML.load(config_path)
@@ -19,10 +20,17 @@ excluded_file_paths =
 command = ARGV[0] || Dir.pwd
 dir_path = File.expand_path(command)
 files = Dir.glob(File.join(dir_path, '**', "*.#{filetype}"))
+
 puts "Working directory: #{command}"
+puts "Number of files: #{files.count}"
+
 linter = ContentStyle::Linter.new(config)
 
+i = 0
 violations = files.flat_map do |file|
+  i += 1
+  print "Working on file: #{i}"
+  print "\r"
   file_content = File.read(file)
   file_path = File.expand_path(file)
   next if excluded_file_paths.include?(file_path)
@@ -33,34 +41,41 @@ violations = files.flat_map do |file|
       @erb_location = id[:erb_location] if v[:line] > id[:line]
       next if v[:line] < id[:line]
     end
+    html_file_path = Pathname.new(File.expand_path(file_path))
     erb_location_path = Pathname.new(File.expand_path(@erb_location))
+    # next unless /app\/views\// =~ erb_location_path.to_s
     root = Pathname.new(Dir.pwd)
-    e = erb_location_path.relative_path_from(root)
-    f = file_path
-    t = v[:text]
-    l = v[:line]
-    m = v[:message]
-    "#{f},#{l},#{t},#{m},#{e}"
+    array = []
+    array.push(
+      html_file_path.relative_path_from(root).to_s,
+      v[:line],
+      v[:message],
+      v[:text],
+      erb_location_path.relative_path_from(root).to_s
+    )
+    array
   end
 end
-
-violations.each do |msg|
-  msg_string = msg.to_s
-  stdout_msg = msg_string.gsub(dir_path, command)
-  puts stdout_msg
-end
-
-puts config.fetch('addendum', '') unless violations.empty?
 
 if csv
   csv_path = "#{command}/content-style-output.csv"
-  output_csv = File.open(csv_path, 'w')
-  output_csv.puts ['Test File,Test File Line,Test File Text,Violation,ERB File']
-  violations.each do |msg|
-    msg_string = msg.to_s
-    csv_msg = msg_string.gsub(dir_path, command)
-    output_csv.puts csv_msg
+  print "Generating CSV at #{csv_path}"
+  CSV.open(csv_path, 'wb') do |csv_row|
+    csv_row << ['Test HTML file', 'HTML line number', 'Violated rule', 'Violating text',
+                'Source file location']
+    violations.each do |msg|
+      next unless msg
+      csv_row << msg
+      puts msg.to_s
+    end
+    results_location = "\nCSV is complete and located at #{csv_path}."
+    puts results_location
+    csv_row
   end
-  results_location = "CSV of results is located at #{csv_path}"
-  puts results_location
+else
+  violations.each do |msg|
+    puts msg.to_s
+  end
 end
+
+puts config.fetch('addendum', '') unless violations.empty?

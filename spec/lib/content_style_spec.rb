@@ -250,7 +250,7 @@ describe ContentStyle::Linter do
         ]
       end
       let(:file) { <<~FILE }
-        <p>App Apply. Five hundred App. George, App king. George—App king. App now, time is running out.</p>
+        <p>App. Five hundred App.</p>
       FILE
 
       it 'reports 1 errors' do
@@ -263,7 +263,7 @@ describe ContentStyle::Linter do
       end
     end
 
-    context 'when violation is compound word starting with uppercase and suggestion starts with lowercase' do
+    context 'when violation is compound word with >1 uppercase and suggestion starts with lowercase' do
       violation_set = 'Payment Gateways'
       suggestion = 'payment gateways'
 

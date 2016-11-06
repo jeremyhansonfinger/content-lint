@@ -42,7 +42,7 @@ violations = files.flat_map do |file|
 
   errors.map do |error|
     violation_array = []
-    source_location = hotcop_identifiers[error[:line]]
+    source_location = hotcop_identifiers[error[:line]] || ''
     html_file_path = Pathname.new(File.expand_path(file_path))
     source_location_path = Pathname.new(File.expand_path(source_location))
     root = Pathname.new(Dir.pwd)

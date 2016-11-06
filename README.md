@@ -81,7 +81,11 @@ rule_set:
 You can also specify an addendum to be added to the end of the list of errors
 using the `addendum` option. 
 
-The error message format is: `"#{path_to_file}:#{line_number}: Don't use #{violation}. Do use #{suggestion}"` 
+The error message format is: 
+
+```ruby
+["#{path_to_html_file}", "#{violation_line_number_in_html_file}", "#{violating text}", "Don't use #{violation}. Do use #{suggestion}", "#{path_to_source_file_if_available}"]
+```
 
 Option | Description
 -----------------------|-----------------------------------------------------------------------------------

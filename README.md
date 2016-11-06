@@ -35,7 +35,7 @@ ContentStyle:
   csv: true
   exceptions:
     - 'manual change'
-  excluded_files:
+  excluded_html_files:
     - 'test/html/worst-file-ever.html'
   excluded_source_folders:
     - 'app/worst'
@@ -92,8 +92,7 @@ Option | Description
 `pattern_description`  | A string that appears in place of the regex pattern as the violation in the error message. (Optional) 
 `addendum`             | A string to be included at the end of every error message of the rule set. (Optional)
 `exceptions`           | A list of strings that specify violations to ignore. (Case-sensitive, optional)
-`excluded_html_files`  | A list of relative or absolute file paths to html files that should be ignored. (
-Optional.)
+`excluded_html_files`  | A list of relative or absolute file paths to html files that should be ignored. (Optional.)
 `excluded_source_folders` | A list of relative or absolute paths to folders of source files that should be ignored. Works only when you have used Hotcop to generate your HTML files, because Hotcop includes the path to the original source file in an HTML comment. (Optional.)
 `csv`                  | A Boolean value that determines whether content-style should write the output to a csv file. (Optional.)
 

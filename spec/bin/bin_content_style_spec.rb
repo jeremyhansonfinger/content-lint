@@ -11,7 +11,7 @@ RSpec.describe 'Run command `content-style test/html`', type: :aruba do
     it 'writes the correct error message for violation to stdout' do
       expect(last_command_started.stdout.chomp).to include 'dropdown'
     end
-    it 'writes the correct erb file location to stdout' do
+    it 'writes the correct source file location to stdout' do
       expect(last_command_started.stdout.chomp).to include 'before.html.erb'
       expect(last_command_started.stdout.chomp).not_to include 'after.html.erb'
     end
@@ -20,13 +20,22 @@ RSpec.describe 'Run command `content-style test/html`', type: :aruba do
     end
   end
 
-  context 'when a file marked for exclusion contains a violation' do
+  context 'when an html file marked for exclusion contains a violation' do
     before(:each) do
       run_simple 'bin/content-style test/html'
     end
     it 'does not write error message for violation in excluded file' do
       expect(last_command_started.stdout.chomp).to include 'dropdown'
       expect(last_command_started.stdout.chomp).not_to include 'droop down'
+    end
+  end
+
+  context 'when a file with a violation has excluded source' do
+    before(:each) do
+      run_simple 'bin/content-style test/html'
+    end
+    it 'does not write error message for violation in file with excluded source' do
+      expect(last_command_started.stdout.chomp).not_to include 'drip down'
     end
   end
 

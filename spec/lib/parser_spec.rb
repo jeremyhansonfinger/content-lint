@@ -23,45 +23,29 @@ describe ContentStyle::Parser do
       end
     end
 
-    context 'when the files has HOTCOP comments' do
-      let(:file) { <<~FILE }
-        <!-- HOTCOP START
-        Type: template
-        Identifier: show.html.erb
-        -->
-        <p>Other content.</p>
-      FILE
+    describe '#file_is_empty?' do
+      let(:file_tree) { described_class.parse(file) }
+      context 'when the file is empty' do
+        let(:file) { '' }
 
-      it 'calculates the correct identifier' do
-        expect(described_class.get_erb_locations(file)).to include(line: 3, erb_location: 'show.html.erb')
+        it 'returns true' do
+          expect(described_class.file_is_empty?(file_tree)).to be_truthy
+        end
       end
-    end
-  end
+      context 'when the file has content' do
+        let(:file) { 'content' }
 
-  describe '#file_is_empty?' do
-    let(:file_tree) { described_class.parse(file) }
-
-    context 'when the file is empty' do
-      let(:file) { '' }
-
-      it 'returns true' do
-        expect(described_class.file_is_empty?(file_tree)).to be_truthy
+        it 'returns false' do
+          expect(described_class.file_is_empty?(file_tree)).to be_falsy
+        end
       end
-    end
 
-    context 'when the file has content' do
-      let(:file) { 'content' }
+      context 'when the file contains only a newline' do
+        let(:file) { "\n" }
 
-      it 'returns false' do
-        expect(described_class.file_is_empty?(file_tree)).to be_falsy
-      end
-    end
-
-    context 'when the file contains only a newline' do
-      let(:file) { "\n" }
-
-      it 'returns false' do
-        expect(described_class.file_is_empty?(file_tree)).to be_falsy
+        it 'returns false' do
+          expect(described_class.file_is_empty?(file_tree)).to be_falsy
+        end
       end
     end
   end

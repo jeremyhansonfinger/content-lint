@@ -92,7 +92,7 @@ using the `addendum` option.
 The error message format is: 
 
 ```ruby
-["#{path_to_html_file}", "#{violation_line_number_in_html_file}", "#{violating text}", "Don't use #{violation}. Do use #{suggestion}", "#{path_to_source_file_if_available}"]
+["#{path_to_html_file}", #{violation_line_number_in_html_file, "#{violating text}", "Don't use #{violation}. Do use #{suggestion}", "#{path_to_source_file_if_available}"]
 ```
 
 Option | Description
@@ -111,12 +111,11 @@ Once content-style is installed and configured, running the following command in
 bundle exec content-style relative/or/absolute/path/to/your/html/files
 ```
 
-results in the following lines being written to stdout:
+results in lines such as these being written to stdout:
 
 ```
-relative/path/to/your/html/files/file_1.html:48: Don't use `support page`. Do use `Lintercorp Help Center`.
-relative/path/to/your/html/files/file_1.html:96: Don't use `application`. Do use `app`.
-relative/path/to/your/html/files/file_2.html:101: Don't use `- (hyphen) or — (em dash) in number ranges`. Do use `— (en dash) in number ranges`.
+["test/html/test001.html", 62, "The application is great!", "Don't use `application`. Do use `app`", "app/views/dashboard.html.erb"]
+["test/html/test002.html", 102, "Click on the drop down menu.", "Don't use `drop down`. Do use `dropdown`", "app/views/help.html.erb"]
 Questions? Contact the Professional Standards team.
 ```
 

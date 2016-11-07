@@ -3,52 +3,94 @@
 
 require 'content_style'
 require 'yaml'
+require 'pathname'
+require 'csv'
 
 config_path = File.read(File.join(Dir.pwd, 'config', 'content-style.yml'))
 config_file = YAML.load(config_path)
 config = config_file.fetch('ContentStyle')
 filetype = config.fetch('filetype')
-excluded_files = config.fetch('excluded_files', [])
+excluded_html_files = config.fetch('excluded_html_files', [])
+excluded_source_folders = config.fetch('excluded_source_folders', [])
 csv = config.fetch('csv', false)
-excluded_file_paths =
-  excluded_files.map do |excluded_file|
-    File.expand_path(excluded_file)
-  end
+
+excluded_file_paths = excluded_html_files.map { |file| File.expand_path(file) }
+excluded_source_folder_paths = excluded_source_folders.map { |folder| File.expand_path(folder) }
 
 command = ARGV[0] || Dir.pwd
 dir_path = File.expand_path(command)
 files = Dir.glob(File.join(dir_path, '**', "*.#{filetype}"))
-puts "Working directory: #{command}"
+
 linter = ContentStyle::Linter.new(config)
 
+i = 0
+
 violations = files.flat_map do |file|
+  i += 1
+
+  print "Working on file: #{i}"
+  print "\r"
+
   file_content = File.read(file)
   file_path = File.expand_path(file)
+
   next if excluded_file_paths.include?(file_path)
-  linter.lint_file(ContentStyle::Parser.parse(file_content)).map do |v|
-    m = v[:message]
-    l = v[:line]
-    "#{file_path}:#{l}: #{m}"
+  next if file_content.empty?
+
+  hotcop_identifiers = ContentStyle::HotcopPartner.get_source_locations(file_content)
+  errors = linter.lint_file(ContentStyle::Parser.parse(file_content))
+
+  errors.map do |error|
+    violation_array = []
+    source_location = hotcop_identifiers[error[:line]] || ''
+    html_file_path = Pathname.new(File.expand_path(file_path))
+    source_location_path = Pathname.new(File.expand_path(source_location))
+    root = Pathname.new(Dir.pwd)
+
+    next if excluded_source_folder_paths.any? { |path| /#{path}/ =~ source_location_path.to_s }
+
+    violation_array.push(
+      html_file_path.relative_path_from(root).to_s,
+      error[:line],
+      error[:message],
+      error[:text],
+      source_location_path.relative_path_from(root).to_s
+    )
+
+    violation_array
   end
 end
 
-violations.each do |msg|
-  msg_string = msg.to_s
-  stdout_msg = msg_string.gsub(dir_path, command)
-  puts stdout_msg
-end
-
-puts config.fetch('addendum', '') unless violations.empty?
+puts "Working directory: #{command}"
+puts "Number of files: #{files.count}"
 
 if csv
   csv_path = "#{command}/content-style-output.csv"
-  output_csv = File.open(csv_path, 'w')
-  output_csv.puts ['File,Line,Violation']
-  violations.each do |msg|
-    msg_string = msg.to_s
-    csv_msg = msg_string.gsub(/\:|\: /, ',').gsub(dir_path, command)
-    output_csv.puts csv_msg
+  print "Generating CSV at #{csv_path}"
+
+  CSV.open(csv_path, 'wb') do |csv_row|
+    csv_row << ['Test HTML file',
+                'HTML line number',
+                'Violated rule',
+                'Violating text',
+                'Source file location']
+
+    violations.each do |v|
+      next unless v
+      csv_row << v
+      puts v.to_s
+    end
+
+    results_location = "\nCSV is complete and located at #{csv_path}."
+    puts results_location
+
+    csv_row
   end
-  results_location = "CSV of results is located at #{csv_path}"
-  puts results_location
+
+else
+  violations.each do |v|
+    puts v.to_s
+  end
 end
+
+puts config.fetch('addendum', '') unless violations.empty?

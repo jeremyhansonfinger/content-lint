@@ -11,32 +11,41 @@ describe ContentStyle::Parser do
         expect(described_class.parse(file).child.name).to eq ContentStyle::Parser::END_MARKER_NAME
       end
     end
-  end
 
-  describe '#file_is_empty?' do
-    let(:file_tree) { described_class.parse(file) }
+    context 'when the files has html comments' do
+      let(:file) { <<~FILE }
+        <!-- START
+           -->
+      FILE
 
-    context 'when the file is empty' do
-      let(:file) { '' }
-
-      it 'returns true' do
-        expect(described_class.file_is_empty?(file_tree)).to be_truthy
+      it 'returns a document fragment with an html comment as a child' do
+        expect(described_class.parse(file).child.comment?).to eq true
       end
     end
 
-    context 'when the file has content' do
-      let(:file) { 'content' }
+    describe '#file_is_empty?' do
+      let(:file_tree) { described_class.parse(file) }
+      context 'when the file is empty' do
+        let(:file) { '' }
 
-      it 'returns false' do
-        expect(described_class.file_is_empty?(file_tree)).to be_falsy
+        it 'returns true' do
+          expect(described_class.file_is_empty?(file_tree)).to be_truthy
+        end
       end
-    end
+      context 'when the file has content' do
+        let(:file) { 'content' }
 
-    context 'when the file contains only a newline' do
-      let(:file) { "\n" }
+        it 'returns false' do
+          expect(described_class.file_is_empty?(file_tree)).to be_falsy
+        end
+      end
 
-      it 'returns false' do
-        expect(described_class.file_is_empty?(file_tree)).to be_falsy
+      context 'when the file contains only a newline' do
+        let(:file) { "\n" }
+
+        it 'returns false' do
+          expect(described_class.file_is_empty?(file_tree)).to be_falsy
+        end
       end
     end
   end

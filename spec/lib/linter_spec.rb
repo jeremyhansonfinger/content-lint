@@ -59,6 +59,32 @@ describe ContentStyle::Linter do
       end
     end
 
+    context 'when violating text line is `Check out the dropdown`' do
+      violation_set = ['dropdown', 'drop down']
+      suggestion = 'drop-down'
+      case_insensitive = true
+
+      let(:rule_set) do
+        [
+          {
+            'violation' => violation_set,
+            'suggestion' => suggestion,
+            'case_insensitive' => case_insensitive
+          }
+        ]
+      end
+
+      let(:file) { <<~FILE }
+        <p>Check out the dropdown
+         menu too.
+         </p>
+      FILE
+
+      it 'returns the correct text line' do
+        expect(linter_errors[0][:text]).to eq 'Check out the dropdown'
+      end
+    end
+
     context 'when file contains three violations, two of which are exceptions' do
       violation_set = ['dropdown', 'drop down', 'pantry', 'chrysanthemums']
       suggestion = 'drop-down'
@@ -177,7 +203,6 @@ describe ContentStyle::Linter do
     context 'when violation starts with uppercase and suggestion starts with lowercase' do
       violation_set = 'Apps'
       suggestion = 'apps'
-
       let(:rule_set) do
         [
           {
@@ -187,7 +212,10 @@ describe ContentStyle::Linter do
         ]
       end
       let(:file) { <<~FILE }
-        <p>Apps, apps, and away. Big Apps and salutations. Did Britney sing apps, I did it again? Apps a daisy.</p>
+        <p>
+        Apps, apps, and away.
+        Big Apps and salutations.
+        </p>
       FILE
 
       it 'reports 1 errors' do
@@ -197,6 +225,9 @@ describe ContentStyle::Linter do
       it 'reports errors for `Apps` and suggests `apps`' do
         expect(linter_errors[0][:message]).to include 'Don\'t use `Apps`'
         expect(linter_errors[0][:message]).to include 'Do use `apps`'
+      end
+      it 'doesn\'t report an error for an initial cap' do
+        expect(linter_errors[0][:text]).not_to include 'Apps, apps, and away'
       end
     end
 
@@ -219,7 +250,7 @@ describe ContentStyle::Linter do
         ]
       end
       let(:file) { <<~FILE }
-        <p>App Apply. Five hundred App. George, App king. George—App king. App now, time is running out.</p>
+        <p>App. Five hundred App.</p>
       FILE
 
       it 'reports 1 errors' do
@@ -232,7 +263,7 @@ describe ContentStyle::Linter do
       end
     end
 
-    context 'when violation is compound word starting with uppercase and suggestion starts with lowercase' do
+    context 'when violation is compound word with >1 uppercase and suggestion starts with lowercase' do
       violation_set = 'Payment Gateways'
       suggestion = 'payment gateways'
 
@@ -406,6 +437,48 @@ describe ContentStyle::Linter do
       end
       it 'calculates correct line numbers' do
         expect(linter_errors[0][:line]).to eq(2)
+      end
+    end
+
+    context 'when text includes suggestion that contains a different violation' do
+      violation_set_1 = 'online store'
+      suggestion_1 = 'Online Store'
+      case_insensitive_1 = false
+      violation_set_2 = 'Store'
+      suggestion_2 = 'store'
+      case_insensitive_2 = false
+
+      let(:rule_set) do
+        [
+          {
+            'violation' => violation_set_1,
+            'suggestion' => suggestion_1,
+            'case_insensitive' => case_insensitive_1
+          },
+          {
+            'violation' => violation_set_2,
+            'suggestion' => suggestion_2,
+            'case_insensitive' => case_insensitive_2
+          }
+        ]
+      end
+      let(:file) { <<~FILE }
+        <p>
+        The online store.
+        The Store.
+        </p>
+        <p>Online Store</p>
+      FILE
+
+      it 'reports 2 errors' do
+        expect(linter_errors.size).to eq 2
+      end
+
+      it 'reports errors for `online store` and `Store` but not `Online Store`' do
+        expect(linter_errors[0][:message]).to include 'Don\'t use `online store`'
+        expect(linter_errors[0][:message]).to include 'Do use `Online Store`'
+        expect(linter_errors[1][:message]).to include 'Don\'t use `Store`'
+        expect(linter_errors[1][:text]).not_to include 'Online Store'
       end
     end
 

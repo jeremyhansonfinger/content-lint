@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable ClassLength
 require 'nokogiri'
 
 module ContentStyle
@@ -73,8 +74,7 @@ module ContentStyle
         pattern_description = violated_rule[:pattern_description]
         violation = pattern_description.empty? ? violated_rule[:violating_pattern] : pattern_description
         {
-          line: line_number,
-          message: "Don't use `#{violation}`. Do use `#{suggestion}`.".strip # #{@addendum}".strip
+          line: line_number, text: text.strip, message: "Don't use `#{violation}`. Do use `#{suggestion}`.".strip
         }
       end
     end
@@ -88,6 +88,7 @@ module ContentStyle
         match_case_insensitive = /(#{violating_pattern})\b/i.match(clean_text)
         match_case_sensitive = /(#{violating_pattern})\b/.match(clean_text)
         match_ignoring_initial_cap_violations = /[^\.]\s(#{violating_pattern})\b/.match(clean_text)
+        next unless no_conflicts(@content_ruleset, violating_pattern, clean_text)
         if case_insensitive
           match_case_insensitive
         elsif !case_insensitive && suggestion_lowercase_violation_uppercase(suggestion, violating_pattern)
@@ -95,6 +96,18 @@ module ContentStyle
         else
           match_case_sensitive
         end
+      end
+    end
+
+    def no_conflicts(content_ruleset, violating_pattern, text)
+      suggestions = []
+      content_ruleset.select do |content_rule|
+        suggestions.push(content_rule[:suggestion])
+      end
+      return true unless suggestions.any? do |s|
+        s.include?(violating_pattern) &&
+        s.length > violating_pattern.length &&
+        text.include?(s)
       end
     end
 
@@ -110,8 +123,11 @@ module ContentStyle
 
     def suggestion_lowercase_violation_uppercase(suggestion, violating_pattern)
       suggestion_first_character_lowercase = suggestion.match(/\A[a-z]/)
-      violation_first_character_uppercase = !violating_pattern.match(/\A[A-Z]/)
-      suggestion_first_character_lowercase && violation_first_character_uppercase
+      violation_first_character_uppercase = violating_pattern.match(/\A[A-Z]/)
+      violation_not_compound = !violating_pattern.match(/[A-Z].*[A-Z]/)
+      suggestion_first_character_lowercase && violation_first_character_uppercase && violation_not_compound
     end
   end
 end
+
+# rubocop:enable ClassLength

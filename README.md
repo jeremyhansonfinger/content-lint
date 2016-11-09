@@ -80,6 +80,13 @@ rule_set:
         - 'support page'
       suggestion: 'Lintercorp Help Center'
 
+    - violation:
+        - 'customer'
+      suggestion: 'merchant'
+      case_insensitive: true
+      context: '`Customer` is reserved for the people that purchase products from merchants'
+
+
     - violation: '\d+ ?(—|-) ?\d+'
       suggestion: '— (en dash) in number ranges'
       pattern_description: '- (hyphen) or — (em dash) in number ranges'
@@ -89,11 +96,19 @@ rule_set:
 You can also specify an addendum to be added to the end of the list of errors
 using the `addendum` option. 
 
-The error message format is: 
+For simple errors without contexts, the error message format is: 
 
 ```ruby
 ["#{path_to_html_file}", #{violation_line_number_in_html_file, "#{violating text}", "Don't use #{violation}. Do use #{suggestion}", "#{path_to_source_file_if_available}"]
 ```
+
+When a context is provided in the rule, the error message format is instead:
+
+```ruby
+["#{path_to_html_file}", #{violation_line_number_in_html_file, "#{violating text}", "Double check that `#{violation}` isn't used in place of `#{suggestion}`. #{context}.", "#{path_to_source_file_if_available}"]
+```
+
+Define contexts for rules that could pop false positives.
 
 Option | Description
 -----------------------|-----------------------------------------------------------------------------------
@@ -102,6 +117,7 @@ Option | Description
 `suggestion`           | A suggested replacement for the unwanted text content defined in `violation`.
 `case_insensitive`     | A Boolean value that determines whether the rule is case sensitive. (Optional, defaults to false if not included)
 `pattern_description`  | A string that appears in place of the regex pattern as the violation in the error message. (Optional) 
+`context`              | A string that is added to the end of the error message. When there is a value for `context`, the error message asks the reader to double-check, rather than to replace.
 
 ## Usage
 

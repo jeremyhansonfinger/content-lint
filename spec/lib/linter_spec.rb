@@ -709,5 +709,33 @@ describe ContentStyle::Linter do
         expect(linter_errors[0][:message]).to include 'Do use `– (minus sign) to denote negative numbers`'
       end
     end
+
+    context 'when violation has context' do
+      violation_set = 'customer'
+      suggestion = 'merchant'
+      context = '`Customer` is reserved for the people that purchase products from merchants'
+
+      let(:rule_set) do
+        [
+          {
+            'violation' => violation_set,
+            'suggestion' => suggestion,
+            'context' => context
+          }
+        ]
+      end
+      let(:file) { <<~FILE }
+      <div>customer</div>
+      FILE
+
+      it 'reports 1 error' do
+        expect(linter_errors.size).to eq 1
+      end
+
+      it 'prints the context' do
+        expect(linter_errors[0][:message]).to include '`Customer` is reserved for the people that purchase products'
+        expect(linter_errors[0][:message]).to include "Double check that `customer` isn't used in place of `merchant`."
+      end
+    end
   end
 end

@@ -6,27 +6,29 @@ require 'nokogiri'
 module ContentStyle
   # Checks for content style guide violations in the text nodes of HTML files.
   class Linter
+    # rubocop:disable AbcSize
     def initialize(config)
       @exceptions = config.fetch('exceptions', [])
       @content_ruleset = []
       config.fetch('rule_set', []).each do |rule|
         suggestion = rule.fetch('suggestion', '')
+        context = rule.fetch('context', '')
         pattern_description = rule.fetch('pattern_description', '')
         case_insensitive = rule.fetch('case_insensitive', false)
         violation_string_or_array = rule.fetch('violation', [])
         violation_array = [violation_string_or_array].flatten
         violation_array.each do |violating_pattern|
           @content_ruleset.push(
-            violating_pattern: violating_pattern,
-            suggestion: suggestion,
-            case_insensitive: case_insensitive,
-            pattern_description: pattern_description
+            violating_pattern: violating_pattern, suggestion: suggestion,
+            case_insensitive: case_insensitive, pattern_description: pattern_description,
+            context: context
           )
         end
       end
       @content_ruleset.freeze
       @addendum = config.fetch('addendum', '')
     end
+    # rubocop:enable AbcSize
 
     def lint_file(file_tree)
       errors = []
@@ -72,9 +74,15 @@ module ContentStyle
       violated_rules(text).map do |violated_rule|
         suggestion = violated_rule[:suggestion]
         pattern_description = violated_rule[:pattern_description]
+        context = violated_rule[:context]
         violation = pattern_description.empty? ? violated_rule[:violating_pattern] : pattern_description
+        message = if !context.empty?
+                    "Double check that `#{violation}` isn't used in place of `#{suggestion}`. #{context}.".strip
+                  else
+                    "Don't use `#{violation}`. Do use `#{suggestion}`.".strip
+                  end
         {
-          line: line_number, text: text.strip, message: "Don't use `#{violation}`. Do use `#{suggestion}`.".strip
+          line: line_number, text: text.strip, message: message
         }
       end
     end

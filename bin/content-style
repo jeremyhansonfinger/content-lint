@@ -5,6 +5,7 @@ require 'content_style'
 require 'yaml'
 require 'pathname'
 require 'csv'
+require 'parallel'
 
 config_path = File.read(File.join(Dir.pwd, 'config', 'content-style.yml'))
 config_file = YAML.load(config_path)
@@ -23,12 +24,8 @@ files = Dir.glob(File.join(dir_path, '**', "*.#{filetype}"))
 
 linter = ContentStyle::Linter.new(config)
 
-i = 0
-
-violations = files.flat_map do |file|
-  i += 1
-
-  print "Working on file: #{i}"
+violations = Parallel.map_with_index(files) do |file, index|
+  print "Working on file: #{index}"
   print "\r"
 
   file_content = File.read(file)
@@ -41,7 +38,6 @@ violations = files.flat_map do |file|
   errors = linter.lint_file(ContentStyle::Parser.parse(file_content))
 
   errors.map do |error|
-    violation_array = []
     source_location = hotcop_identifiers[error[:line]] || ''
     html_file_path = Pathname.new(File.expand_path(file_path))
     source_location_path = Pathname.new(File.expand_path(source_location))
@@ -49,17 +45,15 @@ violations = files.flat_map do |file|
 
     next if excluded_source_folder_paths.any? { |path| /#{path}/ =~ source_location_path.to_s }
 
-    violation_array.push(
+    [
       html_file_path.relative_path_from(root).to_s,
       error[:line],
       error[:message],
       error[:text],
       source_location_path.relative_path_from(root).to_s
-    )
-
-    violation_array
+    ]
   end
-end
+end.flatten(1)
 
 puts "Working directory: #{command}"
 puts "Number of files: #{files.count}"
@@ -92,5 +86,7 @@ else
     puts v.to_s
   end
 end
+
+puts "#{violations.length} violations found"
 
 puts config.fetch('addendum', '') unless violations.empty?

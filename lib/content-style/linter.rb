@@ -9,23 +9,29 @@ module ContentStyle
     # rubocop:disable AbcSize
     def initialize(config)
       @exceptions = config.fetch('exceptions', [])
-      @content_ruleset = []
-      config.fetch('rule_set', []).each do |rule|
+
+      @content_ruleset = config.fetch('rule_set', []).flat_map do |rule|
         suggestion = rule.fetch('suggestion', '')
         context = rule.fetch('context', '')
         pattern_description = rule.fetch('pattern_description', '')
         case_insensitive = rule.fetch('case_insensitive', false)
         violation_string_or_array = rule.fetch('violation', [])
         violation_array = [violation_string_or_array].flatten
-        violation_array.each do |violating_pattern|
-          @content_ruleset.push(
-            violating_pattern: violating_pattern, suggestion: suggestion,
-            case_insensitive: case_insensitive, pattern_description: pattern_description,
-            context: context
-          )
+        violation_array.map do |violating_pattern|
+          { 
+            suggestion: suggestion,
+            case_insensitive: case_insensitive,
+            pattern_description: pattern_description,
+            context: context,
+
+            violating_pattern: violating_pattern,
+            regex_case_sensitive: /(#{violating_pattern})\b/,
+            regex_case_insensitive: /(#{violating_pattern})\b/i,
+            regex_ignoring_initial_cap_violations: /[^.]\s+(#{violating_pattern})\b/,
+          }
         end
-      end
-      @content_ruleset.freeze
+      end.freeze
+
       @addendum = config.fetch('addendum', '')
     end
     # rubocop:enable AbcSize
@@ -92,29 +98,23 @@ module ContentStyle
         violating_pattern = content_rule[:violating_pattern]
         suggestion = content_rule[:suggestion]
         clean_text = strip_suggestions_and_exceptions_from_text(suggestion, @exceptions, text)
-        case_insensitive = content_rule[:case_insensitive] == true
-        match_case_insensitive = /(#{violating_pattern})\b/i.match(clean_text)
-        match_case_sensitive = /(#{violating_pattern})\b/.match(clean_text)
-        match_ignoring_initial_cap_violations = /[^\.]\s(#{violating_pattern})\b/.match(clean_text)
-        next unless no_conflicts(@content_ruleset, violating_pattern, clean_text)
-        if case_insensitive
-          match_case_insensitive
-        elsif !case_insensitive && suggestion_lowercase_violation_uppercase(suggestion, violating_pattern)
-          match_ignoring_initial_cap_violations
+        next if conflicts(violating_pattern, clean_text)
+
+        if content_rule[:case_insensitive] == true 
+          content_rule[:regex_case_insensitive].match(clean_text)
+        elsif suggestion_lowercase_violation_uppercase(suggestion, violating_pattern)
+          content_rule[:regex_ignoring_initial_cap_violations].match(clean_text)
         else
-          match_case_sensitive
+          content_rule[:regex_case_sensitive].match(clean_text)
         end
       end
     end
 
-    def no_conflicts(content_ruleset, violating_pattern, text)
-      suggestions = []
-      content_ruleset.select do |content_rule|
-        suggestions.push(content_rule[:suggestion])
-      end
-      return true unless suggestions.any? do |s|
-        s.include?(violating_pattern) &&
+    def conflicts(violating_pattern, text)
+      @content_ruleset.any? do |content_rule|
+        s = content_rule[:suggestion]
         s.length > violating_pattern.length &&
+        s.include?(violating_pattern) &&
         text.include?(s)
       end
     end

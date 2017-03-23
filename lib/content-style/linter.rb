@@ -6,7 +6,7 @@ require 'nokogiri'
 module ContentStyle
   # Checks for content style guide violations in the text nodes of HTML files.
   class Linter
-    # rubocop:disable AbcSize
+    # rubocop:disable Metrics/MethodLength
     def initialize(config)
       @exceptions = config.fetch('exceptions', [])
 
@@ -18,7 +18,7 @@ module ContentStyle
         violation_string_or_array = rule.fetch('violation', [])
         violation_array = [violation_string_or_array].flatten
         violation_array.map do |violating_pattern|
-          { 
+          {
             suggestion: suggestion,
             case_insensitive: case_insensitive,
             pattern_description: pattern_description,
@@ -27,14 +27,14 @@ module ContentStyle
             violating_pattern: violating_pattern,
             regex_case_sensitive: /(#{violating_pattern})\b/,
             regex_case_insensitive: /(#{violating_pattern})\b/i,
-            regex_ignoring_initial_cap_violations: /[^.]\s+(#{violating_pattern})\b/,
+            regex_ignoring_initial_cap_violations: /[^.]\s+(#{violating_pattern})\b/
           }
         end
       end.freeze
 
       @addendum = config.fetch('addendum', '')
+      # rubocop:enable Metrics/MethodLength
     end
-    # rubocop:enable AbcSize
 
     def lint_file(file_tree)
       errors = []
@@ -100,7 +100,7 @@ module ContentStyle
         clean_text = strip_suggestions_and_exceptions_from_text(suggestion, @exceptions, text)
         next if conflicts(violating_pattern, clean_text)
 
-        if content_rule[:case_insensitive] == true 
+        if content_rule[:case_insensitive] == true
           content_rule[:regex_case_insensitive].match(clean_text)
         elsif suggestion_lowercase_violation_uppercase(suggestion, violating_pattern)
           content_rule[:regex_ignoring_initial_cap_violations].match(clean_text)
@@ -114,8 +114,8 @@ module ContentStyle
       @content_ruleset.any? do |content_rule|
         s = content_rule[:suggestion]
         s.length > violating_pattern.length &&
-        s.include?(violating_pattern) &&
-        text.include?(s)
+          s.include?(violating_pattern) &&
+          text.include?(s)
       end
     end
 

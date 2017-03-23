@@ -13,6 +13,8 @@ Gem::Specification.new do |s|
   s.files = Dir['**/*.rb']
 
   s.add_dependency 'nokogiri', '~> 1.6', '>= 1.6.8'
+  s.add_dependency 'parallel', '~> 1.10.0'
+
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rubocop'
   s.add_development_dependency 'aruba'
